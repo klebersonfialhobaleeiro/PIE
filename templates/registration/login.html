@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block 'title' %}Entrar{% endblock %}
+
+{% block 'body' %}
+<section class="align-items-centerem espaco">
+    <div style="max-width: 500px; padding: 15px 35px 45px; margin:auto;"class="container py-5 h-100">
+      <div class="text-center">
+        <h1 style="font-size: 24px;"> Entre com sua conta</h1>
+      </div>
+
+      <div class="col align-self-center">
+        <form method="POST">
+          {% csrf_token %}
+              {% for field in form %}
+                  <div class="mb-3">
+                      {{ field|as_crispy_field }}
+                  </div>
+              {% endfor %}
+          <div class="mb-3">
+            <a href="{% url 'registration' %}">Criar novo User</a>
+          </div>
+          <div class="col">
+              <button style="width: 100%;"class="btn submit  btn-primary" type="submit">
+                Entrar
+              </button>
+          </div>
+        </form>
+
+
+
+      </div>
+  </section>
+{% endblock %}

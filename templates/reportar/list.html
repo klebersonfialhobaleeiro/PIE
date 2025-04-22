@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'title' %}
+Reportar
+{% endblock 'title' %}
+
+{% block 'head' %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+{% endblock 'head' %}
+
+{% block 'body' %}
+    <div class="card my-4">
+        <div class="card-body">
+            <div class="row">
+                <button onclick="toggleSatellite()" class="btn btn-secondary mb-3">Alternar para Satélite</button>
+            </div>
+        </div>
+        <div class="overflow-x-auto" style="height: 80vh;">
+            <div id="map"></div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <a class="btn btn-secondary copy-btn" href="{% url 'reports-adicionar' %}">{% if user.is_authenticated %}Reportar Problemas{% else %}Faça login para reportar{% endif %}</a>
+            </div>
+        </div>
+    </div>
+{% endblock 'body' %}
+
+{% block 'script' %}
+    <script>
+        const map = L.map('map').setView([-18.981298550309628, -49.46096420288087], 13);
+        let isSatellite = false;
+
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '&copy; Google'
+        });
+
+        function toggleSatellite() {
+            if (isSatellite) {
+                map.removeLayer(satelliteLayer);
+                map.addLayer(streetLayer);
+            } else {
+                map.removeLayer(streetLayer);
+                map.addLayer(satelliteLayer);
+            }
+            isSatellite = !isSatellite;
+        }
+
+        function getColor(tipo) {
+            switch (tipo) {
+                case 'Alagamento': return 'blue';
+                case 'Buraco': return 'orange';
+                case 'Lixo': return 'green';
+                default: return 'gray';
+            }
+        }
+
+        const bounds = L.latLngBounds();
+
+        {% for relato in relatos %}
+            {% if relato.poligono %}
+                let coords_{{ forloop.counter }} = {{ relato.poligono|safe }};
+                let layer_{{ forloop.counter }};
+                let tipo_{{ forloop.counter }} = "{{ relato.get_tipo_problema_display }}";
+
+                if (coords_{{ forloop.counter }}.length === 1) {
+                    let latLng = L.latLng(coords_{{ forloop.counter }}[0][0], coords_{{ forloop.counter }}[0][1]);
+                    layer_{{ forloop.counter }} = L.marker(latLng).addTo(map);
+                    bounds.extend(latLng);
+                } else {
+                    layer_{{ forloop.counter }} = L.polygon(coords_{{ forloop.counter }}, {
+                        color: getColor(tipo_{{ forloop.counter }}),
+                        fillOpacity: 0.5
+                    }).addTo(map);
+
+                    coords_{{ forloop.counter }}.forEach(coord => bounds.extend(coord));
+                }
+
+                let popupContent_{{ forloop.counter }} = `
+                    <h6>${tipo_{{ forloop.counter }}}</h6>
+                    <p>{{ relato.descricao|escapejs }}</p>
+                    {% if relato.foto %}
+                        <a href="{{ relato.foto.url }}" target="_blank">
+                            <img src="{{ relato.foto.url }}" width="150" height="150" style="object-fit: cover;">
+                            <p>Aperte aqui para vê a foto</p>
+                        </a>
+                    {% endif %}
+                    <a href="{% url "reports-detalhe" relato.id %}">
+                        Ver mais
+                    </a>
+                `;
+
+                if (layer_{{ forloop.counter }}) {
+                    layer_{{ forloop.counter }}.bindPopup(popupContent_{{ forloop.counter }});
+                }
+            {% endif %}
+        {% endfor %}
+
+    </script>
+{% endblock 'script' %}

@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block 'title' %}
+Reportar
+{% endblock 'title' %}
+
+{% block 'head' %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+{% endblock 'head' %}
+
+{% block 'body' %}
+    <div class="card my-4">
+        <div class="card-body">
+            <h4>Reportar Problema</h4>
+
+            <div class="mb-3">
+                <button onclick="toggleSatellite()" class="btn btn-secondary">Alternar para Satélite</button>
+            </div>
+
+            <div id="map" class="mb-4"></div>
+
+            <form method="post" enctype="multipart/form-data" action="{% url 'reports-adicionar' %}">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="mb-3">
+                        {{ field|as_crispy_field }}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary mt-3">Enviar Relato</button>
+            </form>
+        </div>
+    </div>
+{% endblock 'body' %}
+
+{% block 'script' %}
+    <script>
+        const map = L.map('map').setView([-18.981298550309628, -49.46096420288087], 13);
+        let isSatellite = false;
+
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '&copy; Google'
+        });
+
+        function toggleSatellite() {
+            if (isSatellite) {
+                map.removeLayer(satelliteLayer);
+                map.addLayer(streetLayer);
+            } else {
+                map.removeLayer(streetLayer);
+                map.addLayer(satelliteLayer);
+            }
+            isSatellite = !isSatellite;
+        }
+
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        const drawControl = new L.Control.Draw({
+            edit: {
+                featureGroup: drawnItems
+            },
+            draw: {
+                polygon: true,
+                polyline: false,
+                circle: false,
+                rectangle: false,
+                marker: true,
+                circlemarker: false
+            }
+        });
+        map.addControl(drawControl);
+
+        map.on(L.Draw.Event.CREATED, function (event) {
+            const layer = event.layer;
+            drawnItems.clearLayers();
+            drawnItems.addLayer(layer);
+
+            let coords = [];
+
+            if (layer instanceof L.Marker) {
+                const latlng = layer.getLatLng();
+                coords = [[latlng.lat, latlng.lng]];
+            } else if (layer instanceof L.Polygon) {
+                coords = layer.getLatLngs()[0].map(coord => [coord.lat, coord.lng]);
+            }
+
+            document.querySelector('[name="poligono"]').value = JSON.stringify(coords);
+            layer.bindPopup("Coordenadas capturadas.").openPopup();
+        });
+
+        const bounds = L.latLngBounds();
+
+        {% for relato in relatos %}
+            {% if relato.poligono %}
+                const coords_{{ forloop.counter }} = {{ relato.poligono|safe }};
+                const tipo_{{ forloop.counter }} = "{{ relato.get_tipo_problema_display }}";
+                let layer_{{ forloop.counter }};
+
+                if (coords_{{ forloop.counter }}.length === 1) {
+                    const latlng = L.latLng(coords_{{ forloop.counter }}[0][0], coords_{{ forloop.counter }}[0][1]);
+                    layer_{{ forloop.counter }} = L.marker(latlng).addTo(map);
+                    bounds.extend(latlng);
+                } else {
+                    layer_{{ forloop.counter }} = L.polygon(coords_{{ forloop.counter }}, {
+                        color: 'gray',
+                        fillOpacity: 0.3
+                    }).addTo(map);
+                    coords_{{ forloop.counter }}.forEach(coord => bounds.extend(coord));
+                }
+
+                let popup_{{ forloop.counter }} = `
+                    <strong>${tipo_{{ forloop.counter }}}</strong><br>
+                    <p>{{ relato.descricao|escapejs }}</p>
+                    {% if relato.foto %}
+                        <a href="{{ relato.foto.url }}" target="_blank">
+                            <img src="{{ relato.foto.url }}" width="150" height="150" style="object-fit: cover;">
+                        </a>
+                    {% endif %}
+                `;
+                layer_{{ forloop.counter }}.bindPopup(popup_{{ forloop.counter }});
+            {% endif %}
+        {% endfor %}
+    </script>
+{% endblock 'script' %}

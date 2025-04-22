@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block 'title' %}Meus Relatos{% endblock %}
+
+{% block 'body' %}
+<div class="container mt-4">
+    <h3 class="mb-4">Meus Relatos</h3>
+
+    {% if relatos %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                        <th>Data</th>
+                        <th>Foto</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for relato in relatos %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ relato.get_tipo_problema_display }}</td>
+                            <td>{{ relato.descricao|truncatewords:10 }}</td>
+                            <td>{{ relato.data_relato|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {% if relato.foto %}
+                                    <a href="{{ relato.foto.url }}" target="_blank">
+                                        <img src="{{ relato.foto.url }}" width="150" height="150" style="object-fit: cover;">
+                                        <p>Aperte aqui para vê a foto</p>
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Sem imagem</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'reports-detalhe' relato.id %}" class="btn btn-sm btn-primary">Ver</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Nenhum relato encontrado.</p>
+    {% endif %}
+</div>
+{% endblock %}

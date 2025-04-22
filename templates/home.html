@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'body' %}
+<header style="height: 80vh;" class="masthead d-flex align-items-center">
+    <div class="col">
+        <h1 class="text-center">Sejam bem-vindos</h1>
+        <div class="text-center mt-3" >
+            <a href="{% url "reports-listar" %}">Acessar o mapa com todos os reports</a>
+        </div>
+    </div>
+</header>
+{% endblock 'body' %}

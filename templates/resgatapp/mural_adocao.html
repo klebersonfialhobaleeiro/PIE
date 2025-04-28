@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block 'title' %}Mural de Adoção{% endblock %}
+
+{% block 'body' %}
+<div class="container">
+    <h2>Mural de Adoção</h2>
+
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <select name="especie" class="form-select">
+                    <option value="">Selecione a Espécie</option>
+                    {% for especie in especies %}
+                        <option value="{{ especie.0 }}" {% if especie.0 == request.GET.especie %}selected{% endif %}>
+                            {{ especie.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <select name="adotado" class="form-select">
+                    <option value="">Selecione o Status de Adoção</option>
+                    <option value="sim" {% if request.GET.adotado == 'sim' %}selected{% endif %}>Adotados</option>
+                    <option value="não" {% if request.GET.adotado == 'não' %}selected{% endif %}>Não Adotados</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        {% for animal in animais %}
+            <div class="col-md-4">
+                <div class="card">
+                    {% if animal.imagem %}
+                        <img src="{{ animal.imagem.url }}" class="card-img-top" alt="{{ animal.nome }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Imagem do animal">
+                    {% endif %}
+                    <div class="card-body">
+                        <p class="card-text"><strong>Descrição:</strong> {{ animal.descricao|truncatewords:3 }}</p>
+                        <p class="card-text"><strong>Espécie:</strong> {{ animal.especie }}</p>
+                        {% if animal.adotado %}
+                            <span class="badge bg-secondary">Adotado</span>
+                        {% else %}
+                            <form method="post" action="{% url 'adotar_animal' animal.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success" onclick="return confirm('Tem certeza que deseja adotar esse animal?')">
+                                    Adotar animal
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>Nenhum animal disponível para adoção no momento.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

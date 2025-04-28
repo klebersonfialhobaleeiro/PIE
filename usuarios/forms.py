@@ -14,5 +14,5 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'password1', 'password2')
+        fields = ('username', 'first_name', 'password1', 'password2', 'is_superuser')
     

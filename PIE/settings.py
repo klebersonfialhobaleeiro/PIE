@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'usuarios',
     'reportar',
+    'resgate',
 
     'crispy_forms',
     'crispy_bootstrap5',

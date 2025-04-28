@@ -37,7 +37,7 @@ def creat(request):
 
 @login_required
 def myreports(request):
-    if request.user.is_staff:
+    if request.user.is_superuser:
         relatos = Relato.objects.all().order_by('-data_relato')
     else:
         relatos = Relato.objects.filter(usuario=request.user).order_by('-data_relato')
@@ -47,7 +47,7 @@ def myreports(request):
 @login_required
 def detail(request, relato_id):
     relato = get_object_or_404(Relato, id=relato_id)
-    pode_editar = request.user == relato.usuario or request.user.is_staff
+    pode_editar = request.user == relato.usuario or request.user.is_superuser
 
     return render(request, 'reportar/detail.html', {
         'relato': relato,
@@ -59,7 +59,7 @@ def detail(request, relato_id):
 def edit(request, relato_id):
     relato = get_object_or_404(Relato, id=relato_id)
 
-    if relato.usuario != request.user and not request.user.is_staff:
+    if relato.usuario != request.user and not request.user.is_superuser:
         messages.error(request, "Você não tem permissão para editar esse relato.")
         return redirect('reports-meus')
 
@@ -74,7 +74,7 @@ def edit(request, relato_id):
 def delete(request, relato_id):
     relato = get_object_or_404(Relato, id=relato_id)
 
-    if relato.usuario != request.user and not request.user.is_staff:
+    if relato.usuario != request.user and not request.user.is_superuser:
         messages.error(request, "Você não tem permissão para excluir esse relato.")
         return redirect('reports-meus')
 

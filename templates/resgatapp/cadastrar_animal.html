@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block 'title' %}Cadastrar Animal Resgatado{% endblock %}
+
+{% block 'body' %}
+<h1>Cadastrar Animal Resgatado</h1>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="mb-3">
+            {{ field|as_crispy_field }}
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary mb-3">Salvar</button>
+</form>
+{% endblock %}

@@ -21,17 +21,13 @@ Reportar
 
 {% block 'body' %}
     <div class="card my-4">
-        <div class="card-body">
-            <div class="row">
-                <button onclick="toggleSatellite()" class="btn btn-secondary mb-3">Alternar para Satélite</button>
-            </div>
-        </div>
-        <div class="overflow-x-auto" style="height: 80vh;">
+        <div class="overflow-x-auto">
             <div id="map"></div>
         </div>
-        <div class="card-footer">
+        <div class="card-footer mt-3">
             <div class="row">
-                <a class="btn btn-secondary copy-btn" href="{% url 'reports-adicionar' %}">{% if user.is_authenticated %}Reportar Problemas{% else %}Faça login para reportar{% endif %}</a>
+                <button onclick="toggleSatellite()" class="btn btn-primary mb-3">Alternar para Satélite</button>
+                <a class="btn btn-danger copy-btn" href="{% url 'reports-adicionar' %}">{% if user.is_authenticated %}Reportar Problemas{% else %}Faça login para reportar{% endif %}</a>
             </div>
         </div>
     </div>

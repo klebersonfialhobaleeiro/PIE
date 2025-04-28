@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block 'title' %}Lista de Animais Resgatados{% endblock %}
+
+{% block 'body' %}
+<h1>Animais Resgatados</h1>
+
+<a href="{% url 'cadastrar_animal' %}" class="btn btn-primary">Cadastrar Novo Animal</a>
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Adotado</th>
+            <th>Espécie</th>
+            <th>Descrição</th>
+            <th>Foto</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for animal in animais %}
+        <tr>
+            <td>{{ animal.adotado }}</td>
+            <td>{{ animal.especie }}</td>
+            <td>{{ animal.descricao|truncatewords:3 }}</td>
+            <td>
+                {% if animal.imagem %}
+                    <a href="{{ animal.imagem.url }}" target="_blank">
+                        <img src="{{ animal.imagem.url }}" width="150" height="150" style="object-fit: cover;">
+                        <p>Aperte aqui para vê a foto</p>
+                    </a>
+                {% else %}
+                    <span class="text-muted">Sem imagem</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if animal.resgatado_por == user or user.is_superuser %}
+                    <a href="{% url 'editar_animal' animal.id %}" class="btn btn-warning">Editar</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

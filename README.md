@@ -9,6 +9,16 @@ Relate e visualize problemas urbanos georreferenciados com facilidade.
 
 Primeiro, clone o repositório do projeto:
 
+# **GeoRelato**
+
+Relate e visualize problemas urbanos georreferenciados com facilidade.
+
+## **Setup**
+
+### **1. Clonar o Repositório**
+
+Primeiro, clone o repositório do projeto:
+
 ```sh
 $ git clone https://github.com/klebersonfialhobaleeiro/PIE.git
 $ cd PIE
@@ -60,5 +70,4 @@ Agora, você pode rodar o servidor de desenvolvimento para ver a aplicação fun
 ```sh
 (.venv) $ python manage.py runserver
 ```
-
 O servidor estará rodando em [http://127.0.0.1:8000](http://127.0.0.1:8000).

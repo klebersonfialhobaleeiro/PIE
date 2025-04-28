@@ -1,13 +1,136 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block 'title' %}Desenvolve Ituiutaba{% endblock %}
+
 {% block 'body' %}
-<header style="height: 80vh;" class="masthead d-flex align-items-center">
-    <div class="col">
-        <h1 class="text-center">Sejam bem-vindos</h1>
-        <div class="text-center mt-3" >
-            <a href="{% url "reports-listar" %}">Acessar o mapa com todos os reports</a>
+<div class="container mt-5">
+    <div>
+        <div class="text-center mb-4">
+            <h1 class="display-4">GeoRelato</h1>
+            <p class="lead">Relate e visualize problemas urbanos georreferenciados com facilidade.</p>
+        </div>
+
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">📍 Reportar Problema</h5>
+                        <p class="card-text">Descreva e localize problemas diretamente no mapa.</p>
+                        <a href="{% url 'reports-adicionar' %}" class="btn btn-outline-primary">Reportar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">🗂️ Meus Relatos</h5>
+                        <p class="card-text">Acompanhe e gerencie os relatos que você enviou.</p>
+                        <a href="{% url 'reports-meus' %}" class="btn btn-outline-secondary">Ver Relatos</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">🌐 Mapa Geral</h5>
+                        <p class="card-text">Explore todos os relatos registrados na cidade.</p>
+                        <a href="{% url 'reports-listar' %}" class="btn btn-outline-success">Visualizar Mapa</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card my-4">
+                <div class="card-body text-center">
+                <h5 class="card-title mb-4">☀️ Previsão do Tempo - Ituiutaba MG</h5>
+                <div id="previsao-tempo" class="d-flex flex-column align-items-center">
+                    <p>Carregando previsão...</p>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="text-center mb-4">
+                <h1 class="display-4">Resgatapp</h1>
+                <p class="lead">Relate e visualize animais em estado de vulnerabilidade.</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">🐶 Resgatar Animal</h5>
+                            <p class="card-text">Encontre animais perdidos e ajude a resgatar!</p>
+                            <a href="{% url 'listar_animais' %}" class="btn btn-outline-warning">Resgatar</a>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">🐱 Mural de Adoção</h5>
+                            <p class="card-text">Veja animais disponíveis para adoção e ajude a encontrar um lar!</p>
+                            <a href="{% url 'mural_adocao' %}" class="btn btn-outline-info">Ver Mural</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</header>
-{% endblock 'body' %}
+</div>
+{% endblock %}
+
+{% block 'script' %}
+<script>
+    function buscarPrevisao() {
+      const latitude = -18.9737;
+      const longitude = -49.4678;
+  
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,precipitation_probability,wind_speed_10m,relative_humidity_2m`)
+        .then(response => response.json())
+        .then(clima => {
+          const temperatura = clima.current.temperature_2m;
+          const vento = clima.current.wind_speed_10m;
+          const umidade = clima.current.relative_humidity_2m;
+          const chanceChuva = clima.current.precipitation_probability;
+          const weatherCode = clima.current.weathercode;
+  
+          // Escolher ícone de acordo com o código do clima
+          const icones = {
+            0: "☀️ Céu Limpo",
+            1: "🌤️ Parcialmente Nublado",
+            2: "☁️ Nublado",
+            3: "🌧️ Chuva Leve",
+            45: "🌫️ Névoa",
+            48: "🌫️ Névoa Congelante",
+            51: "🌦️ Chuva Leve",
+            61: "🌧️ Chuva Moderada",
+            80: "🌧️ Pancadas de Chuva",
+            95: "⛈️ Tempestade",
+          };
+  
+          const descricaoTempo = icones[weatherCode] || "🌡️ Clima desconhecido";
+  
+          document.getElementById('previsao-tempo').innerHTML = `
+            <div style="font-size: 3rem;">${descricaoTempo.split(' ')[0]}</div>
+            <h6 class="mt-3">${descricaoTempo.split(' ').slice(1).join(' ')}</h6>
+  
+            <div class="mt-4">
+              <p><strong>Temperatura:</strong> ${temperatura}°C</p>
+              <p><strong>Chance de Chuva:</strong> ${chanceChuva}%</p>
+              <p><strong>Vento:</strong> ${vento} km/h</p>
+              <p><strong>Umidade:</strong> ${umidade}%</p>
+            </div>
+          `;
+        })
+        .catch(error => {
+          console.error('Erro ao buscar clima:', error);
+          document.getElementById('previsao-tempo').innerHTML = `<p>Não foi possível carregar os dados do clima.</p>`;
+        });
+    }
+  
+    document.addEventListener('DOMContentLoaded', buscarPrevisao);
+  </script>
+{% endblock 'script' %}

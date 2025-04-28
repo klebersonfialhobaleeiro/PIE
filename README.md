@@ -1,14 +1,3 @@
-
-# **GeoRelato**
-
-Relate e visualize problemas urbanos georreferenciados com facilidade.
-
-## **Setup**
-
-### **1. Clonar o Repositório**
-
-Primeiro, clone o repositório do projeto:
-
 # **GeoRelato**
 
 Relate e visualize problemas urbanos georreferenciados com facilidade.

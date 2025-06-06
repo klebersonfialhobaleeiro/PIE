@@ -1,0 +1,28 @@
+services:
+  django:
+    build: .
+    container_name: django_app
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    command: >
+       sh -c "python manage.py makemigrations &&  
+              python manage.py migrate &&  
+              python manage.py collectstatic --noinput &&  
+              gunicorn PIE.wsgi:application --bind 0.0.0.0:8000"
+
+  nginx:
+    image: nginx:1.27.5
+    container_name: nginx_server
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - django
+
+volumes:
+  static_volume:
+  media_volume:
